@@ -2,46 +2,99 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Shadowdark Character Generator</title>
+  <title>Shadowdark Character Sheet</title>
   <style>
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 1cm;
+      }
+    }
+
     body {
-      font-family: monospace;
-      background-color: #111;
-      color: #eee;
-      padding: 2rem;
-      max-width: 700px;
+      font-family: Georgia, serif;
+      background: white;
+      color: black;
+      padding: 1cm;
+      max-width: 1000px;
       margin: auto;
     }
-    button {
-      background: #333;
-      color: #fff;
-      border: 1px solid #555;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-bottom: 1rem;
+
+    h1 {
+      text-align: center;
+      margin-bottom: 0.5em;
     }
+
+    .section {
+      margin-bottom: 1em;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 0.5em;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.2em;
+    }
+
+    .stat {
+      flex: 1;
+      text-align: center;
+      border: 1px solid #aaa;
+      margin: 0 0.3em;
+      padding: 0.5em;
+    }
+
     pre {
-      background: #222;
-      padding: 1rem;
-      border: 1px solid #444;
-      overflow-x: auto;
+      font-size: 1em;
+      white-space: pre-wrap;
+      background: #f4f4f4;
+      padding: 1em;
+      border: 1px solid #ddd;
+    }
+
+    .grid-2 {
+      display: flex;
+      gap: 2em;
+    }
+
+    .half {
+      flex: 1;
     }
   </style>
 </head>
 <body>
-  <h1>🎲 Shadowdark Level 1 Character Generator</h1>
-  <button onclick="generateAndDisplay()">Generate Character</button>
-  <pre id="output">Click the button above to create a new character...</pre>
+  <h1>Shadowdark RPG – Level 1 Character</h1>
+
+  <div class="section">
+    <strong>Name:</strong> <span id="charName">—</span><br>
+    <strong>Class:</strong> <span id="charClass">—</span>
+  </div>
+
+  <div class="section stats" id="statsSection"></div>
+
+  <div class="section grid-2">
+    <div class="half">
+      <strong>Hit Points:</strong> <span id="hp">—</span><br><br>
+      <strong>Gear:</strong>
+      <pre id="gear">—</pre>
+    </div>
+    <div class="half">
+      <strong>Spells:</strong>
+      <pre id="spells">—</pre>
+    </div>
+  </div>
 
   <script>
+    // Insert your character generator logic here:
     function roll3d6() {
-      return Array.from({ length: 3 }, () => Math.floor(Math.random() * 6) + 1)
-                  .reduce((sum, val) => sum + val, 0);
+      return Array.from({ length: 3 }, () => Math.floor(Math.random() * 6) + 1).reduce((a, b) => a + b, 0);
     }
-
     function abilityMod(score) {
       return Math.floor((score - 10) / 2);
+    }
+    function getRandom(arr, n = 1) {
+      return arr.sort(() => 0.5 - Math.random()).slice(0, n);
     }
 
     const classes = ["Fighter", "Thief", "Wizard", "Priest"];
@@ -50,54 +103,48 @@
       Priest: ["Cure Wounds", "Bless", "Protection from Evil", "Turn Undead", "Detect Evil"]
     };
 
-    function getRandomFromArray(arr, count = 1) {
-      const shuffled = arr.slice().sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, count);
-    }
-
     function generateCharacter() {
-      const stats = {
-        STR: roll3d6(),
-        DEX: roll3d6(),
-        CON: roll3d6(),
-        INT: roll3d6(),
-        WIS: roll3d6(),
-        CHA: roll3d6()
-      };
+      const stats = ["STR", "DEX", "CON", "INT", "WIS", "CHA"].reduce((obj, stat) => {
+        const score = roll3d6();
+        obj[stat] = { score, mod: abilityMod(score) };
+        return obj;
+      }, {});
 
-      const characterClass = getRandomFromArray(classes)[0];
-      const conMod = abilityMod(stats.CON);
-      const baseHP = {
-        Fighter: 8,
-        Thief: 6,
-        Wizard: 4,
-        Priest: 6
-      }[characterClass];
-
+      const charClass = getRandom(classes)[0];
+      const conMod = stats.CON.mod;
+      const baseHP = { Fighter: 8, Thief: 6, Wizard: 4, Priest: 6 }[charClass];
       const gear = {
         Fighter: ["Sword", "Shield", "Chainmail", "Torch x6"],
         Thief: ["Dagger", "Thieves' Tools", "Leather Armor", "Torch x6"],
         Wizard: ["Dagger", "Spellbook", "Robes", "Torch x6"],
         Priest: ["Mace", "Holy Symbol", "Chainmail", "Torch x6"]
-      }[characterClass];
-
-      const spells = ["Wizard", "Priest"].includes(characterClass)
-        ? getRandomFromArray(level1Spells[characterClass], 3)
-        : [];
+      }[charClass];
+      const spells = ["Wizard", "Priest"].includes(charClass) ? getRandom(level1Spells[charClass], 3) : [];
 
       return {
-        Class: characterClass,
-        Stats: stats,
-        Modifiers: Object.fromEntries(Object.entries(stats).map(([k, v]) => [k, abilityMod(v)])),
-        HP: Math.max(1, baseHP + conMod),
-        Gear: gear,
-        Spells: spells
+        name: "Unnamed Adventurer",
+        class: charClass,
+        stats,
+        hp: Math.max(1, baseHP + conMod),
+        gear,
+        spells
       };
     }
 
-    function generateAndDisplay() {
-      const char = generateCharacter();
-      document.getElementById("output").textContent = JSON.stringify(char, null, 2);
+    const char = generateCharacter();
+
+    document.getElementById("charName").textContent = char.name;
+    document.getElementById("charClass").textContent = char.class;
+    document.getElementById("hp").textContent = char.hp;
+    document.getElementById("gear").textContent = char.gear.join("\n");
+    document.getElementById("spells").textContent = char.spells.join("\n") || "None";
+
+    const statsDiv = document.getElementById("statsSection");
+    for (const [stat, { score, mod }] of Object.entries(char.stats)) {
+      const div = document.createElement("div");
+      div.className = "stat";
+      div.innerHTML = `<strong>${stat}</strong><br>${score} (${mod >= 0 ? "+" : ""}${mod})`;
+      statsDiv.appendChild(div);
     }
   </script>
 </body>
