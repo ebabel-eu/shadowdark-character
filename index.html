@@ -5,9 +5,9 @@
   <title>Shadowdark Character Sheet</title>
   <style>
     @media print {
-      @page {
-        size: A4 landscape;
-        margin: 1cm;
+      @page { size: A4 landscape; margin: 1cm; }
+      #generateBtn {
+        display: none;
       }
     }
 
@@ -15,86 +15,114 @@
       font-family: Georgia, serif;
       background: white;
       color: black;
-      padding: 1cm;
+      padding: 2rem;
       max-width: 1000px;
       margin: auto;
     }
 
     h1 {
       text-align: center;
-      margin-bottom: 0.5em;
+      margin-bottom: 1em;
+    }
+
+    #generateBtn {
+      margin-bottom: 1em;
+      font-size: 1em;
+      padding: 0.5em 1em;
+      cursor: pointer;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1em;
+      margin-bottom: 1em;
     }
 
     .section {
-      margin-bottom: 1em;
-      border-bottom: 1px solid #ccc;
-      padding-bottom: 0.5em;
-    }
-
-    .stats {
-      display: flex;
-      justify-content: space-between;
-      font-size: 1.2em;
-    }
-
-    .stat {
-      flex: 1;
-      text-align: center;
       border: 1px solid #aaa;
-      margin: 0 0.3em;
-      padding: 0.5em;
-    }
-
-    pre {
-      font-size: 1em;
-      white-space: pre-wrap;
-      background: #f4f4f4;
       padding: 1em;
-      border: 1px solid #ddd;
     }
 
-    .grid-2 {
-      display: flex;
-      gap: 2em;
+    .section h2 {
+      margin-top: 0;
+      font-size: 1.1em;
     }
 
-    .half {
-      flex: 1;
+    .gear, .spells {
+      white-space: pre-wrap;
+      background: #f9f9f9;
+      padding: 0.5em;
+      border: 1px solid #ccc;
+    }
+
+    input {
+      width: 100%;
+      font-family: inherit;
+      font-size: 1em;
+      border: none;
+      border-bottom: 1px solid #ccc;
+      background: transparent;
     }
   </style>
 </head>
 <body>
   <h1>Shadowdark RPG – Level 1 Character</h1>
+  <button id="generateBtn" onclick="generateAndDisplay()">🎲 Generate New Character</button>
 
-  <div class="section">
-    <strong>Name:</strong> <span id="charName">—</span><br>
-    <strong>Class:</strong> <span id="charClass">—</span>
+  <div class="grid">
+    <div class="section">
+      <h2>Name</h2>
+      <input type="text" id="charName" placeholder="Unnamed Adventurer">
+    </div>
+    <div class="section"><h2>Class</h2><div id="charClass"></div></div>
+    <div class="section"><h2>HP</h2><div id="hp"></div></div>
+    <div class="section"><h2>XP / Level</h2><div>0 / 1</div></div>
   </div>
 
-  <div class="section stats" id="statsSection"></div>
+  <div class="grid">
+    <div class="section"><h2>Title</h2><input type="text" placeholder="e.g. the Bold"></div>
+    <div class="section"><h2>Alignment</h2><input type="text" placeholder="e.g. Neutral"></div>
+    <div class="section"><h2>Deity</h2><input type="text" placeholder="e.g. Vecna"></div>
+    <div class="section"><h2>Background</h2><input type="text" placeholder="e.g. Orphaned thief"></div>
+  </div>
 
-  <div class="section grid-2">
-    <div class="half">
-      <strong>Hit Points:</strong> <span id="hp">—</span><br><br>
-      <strong>Gear:</strong>
-      <pre id="gear">—</pre>
-    </div>
-    <div class="half">
-      <strong>Spells:</strong>
-      <pre id="spells">—</pre>
-    </div>
+  <div class="grid">
+    <div class="section"><h2>STR</h2><div id="STR"></div></div>
+    <div class="section"><h2>DEX</h2><div id="DEX"></div></div>
+    <div class="section"><h2>CON</h2><div id="CON"></div></div>
+    <div class="section"><h2>INT</h2><div id="INT"></div></div>
+    <div class="section"><h2>WIS</h2><div id="WIS"></div></div>
+    <div class="section"><h2>CHA</h2><div id="CHA"></div></div>
+  </div>
+
+  <div class="section">
+    <h2>Gear</h2>
+    <div class="gear" id="gear"></div>
+  </div>
+
+  <div class="section">
+    <h2>Spells</h2>
+    <div class="spells" id="spells"></div>
   </div>
 
   <script>
-    // Insert your character generator logic here:
     function roll3d6() {
       return Array.from({ length: 3 }, () => Math.floor(Math.random() * 6) + 1).reduce((a, b) => a + b, 0);
     }
+
     function abilityMod(score) {
       return Math.floor((score - 10) / 2);
     }
+
     function getRandom(arr, n = 1) {
       return arr.sort(() => 0.5 - Math.random()).slice(0, n);
+    }
+
+    function generateFantasyName() {
+      const first = ["Kael", "Ryn", "Thorn", "Mira", "Dara", "Zar", "Lira", "Bryn", "Vor", "Nyra", "Eld"];
+      const last = ["Blackthorn", "Ironfist", "Stormborn", "Nightshade", "Whisperwind", "Ashwalker", "Brighthelm"];
+      return `${getRandom(first)} ${getRandom(last)}`;
     }
 
     const classes = ["Fighter", "Thief", "Wizard", "Priest"];
@@ -109,7 +137,6 @@
         obj[stat] = { score, mod: abilityMod(score) };
         return obj;
       }, {});
-
       const charClass = getRandom(classes)[0];
       const conMod = stats.CON.mod;
       const baseHP = { Fighter: 8, Thief: 6, Wizard: 4, Priest: 6 }[charClass];
@@ -122,7 +149,7 @@
       const spells = ["Wizard", "Priest"].includes(charClass) ? getRandom(level1Spells[charClass], 3) : [];
 
       return {
-        name: "Unnamed Adventurer",
+        name: generateFantasyName(),
         class: charClass,
         stats,
         hp: Math.max(1, baseHP + conMod),
@@ -131,21 +158,22 @@
       };
     }
 
-    const char = generateCharacter();
+    function generateAndDisplay() {
+      const char = generateCharacter();
+      document.getElementById("charName").value = char.name;
+      document.getElementById("charClass").textContent = char.class;
+      document.getElementById("hp").textContent = char.hp;
+      document.getElementById("gear").textContent = char.gear.join("\n");
+      document.getElementById("spells").textContent = char.spells.join("\n") || "None";
 
-    document.getElementById("charName").textContent = char.name;
-    document.getElementById("charClass").textContent = char.class;
-    document.getElementById("hp").textContent = char.hp;
-    document.getElementById("gear").textContent = char.gear.join("\n");
-    document.getElementById("spells").textContent = char.spells.join("\n") || "None";
-
-    const statsDiv = document.getElementById("statsSection");
-    for (const [stat, { score, mod }] of Object.entries(char.stats)) {
-      const div = document.createElement("div");
-      div.className = "stat";
-      div.innerHTML = `<strong>${stat}</strong><br>${score} (${mod >= 0 ? "+" : ""}${mod})`;
-      statsDiv.appendChild(div);
+      for (const stat in char.stats) {
+        const s = char.stats[stat];
+        document.getElementById(stat).textContent = `${s.score} (${s.mod >= 0 ? "+" : ""}${s.mod})`;
+      }
     }
+
+    // Generate on first load
+    generateAndDisplay();
   </script>
 </body>
 </html>
