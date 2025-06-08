@@ -49,7 +49,7 @@
       font-size: 1.1em;
     }
 
-    .gear, .spells {
+    .gear, .spells, .talents, .attacks {
       white-space: pre-wrap;
       background: #f9f9f9;
       padding: 0.5em;
@@ -97,6 +97,16 @@
   </div>
 
   <div class="section">
+    <h2>Talents</h2>
+    <div class="talents" id="talents"></div>
+  </div>
+
+  <div class="section">
+    <h2>Attacks</h2>
+    <div class="attacks" id="attacks"></div>
+  </div>
+
+  <div class="section">
     <h2>Gear</h2>
     <div class="gear" id="gear"></div>
   </div>
@@ -104,6 +114,13 @@
   <div class="section">
     <h2>Spells</h2>
     <div class="spells" id="spells"></div>
+  </div>
+
+  <div class="grid">
+    <div class="section"><h2>Gold (GP)</h2><input type="text" value="3d6 × 10 GP"></div>
+    <div class="section"><h2>Silver (SP)</h2><input type="text" value="0"></div>
+    <div class="section"><h2>Copper (CP)</h2><input type="text" value="0"></div>
+    <div class="section"><h2>Free to Carry</h2><input type="text" placeholder="e.g. 2 slots remaining"></div>
   </div>
 
   <script>
@@ -131,6 +148,20 @@
       Priest: ["Cure Wounds", "Bless", "Protection from Evil", "Turn Undead", "Detect Evil"]
     };
 
+    const classTalents = {
+      Fighter: ["Mighty (+1 to hit/damage in melee)", "Shield Expert (+1 AC when using shield)", "Tough (+2 HP)"],
+      Thief: ["Sneaky (+2 to DEX checks)", "Backstab (+1d6 dmg when attacking from surprise)", "Light Step (never triggers traps)"],
+      Wizard: ["Keen Mind (+1 to INT checks)", "Scholar (gain 1 extra spell at start)", "Dark Vision (see without torch)"],
+      Priest: ["Divine Favor (+1 to spellcasting checks)", "Sanctified (immune to cursed items)", "Healer (+1 HP from healing magic)"]
+    };
+
+    const classWeapons = {
+      Fighter: [{ name: "Sword", type: "melee", die: "1d8" }],
+      Thief: [{ name: "Dagger", type: "melee", die: "1d4" }],
+      Wizard: [{ name: "Dagger", type: "melee", die: "1d4" }],
+      Priest: [{ name: "Mace", type: "melee", die: "1d6" }]
+    };
+
     function generateCharacter() {
       const stats = ["STR", "DEX", "CON", "INT", "WIS", "CHA"].reduce((obj, stat) => {
         const score = roll3d6();
@@ -147,6 +178,8 @@
         Priest: ["Mace", "Holy Symbol", "Chainmail", "Torch x6"]
       }[charClass];
       const spells = ["Wizard", "Priest"].includes(charClass) ? getRandom(level1Spells[charClass], 3) : [];
+      const talents = getRandom(classTalents[charClass], 1);
+      const weapons = classWeapons[charClass];
 
       return {
         name: generateFantasyName(),
@@ -154,7 +187,12 @@
         stats,
         hp: Math.max(1, baseHP + conMod),
         gear,
-        spells
+        spells,
+        talents,
+        attacks: weapons.map(w => {
+          const mod = w.type === "melee" ? stats.STR.mod : stats.DEX.mod;
+          return `${w.name} — +${mod} to hit — ${w.die} damage`;
+        })
       };
     }
 
@@ -165,6 +203,8 @@
       document.getElementById("hp").textContent = char.hp;
       document.getElementById("gear").textContent = char.gear.join("\n");
       document.getElementById("spells").textContent = char.spells.join("\n") || "None";
+      document.getElementById("talents").textContent = char.talents.join("\n");
+      document.getElementById("attacks").textContent = char.attacks.join("\n");
 
       for (const stat in char.stats) {
         const s = char.stats[stat];
@@ -172,7 +212,7 @@
       }
     }
 
-    // Generate on first load
+    // Generate character on load
     generateAndDisplay();
   </script>
 </body>
