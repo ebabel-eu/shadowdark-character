@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shadowdark Character Generator</title>
+  <style>
+    body {
+      font-family: monospace;
+      background-color: #111;
+      color: #eee;
+      padding: 2rem;
+      max-width: 700px;
+      margin: auto;
+    }
+    button {
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+    pre {
+      background: #222;
+      padding: 1rem;
+      border: 1px solid #444;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎲 Shadowdark Level 1 Character Generator</h1>
+  <button onclick="generateAndDisplay()">Generate Character</button>
+  <pre id="output">Click the button above to create a new character...</pre>
+
+  <script>
+    function roll3d6() {
+      return Array.from({ length: 3 }, () => Math.floor(Math.random() * 6) + 1)
+                  .reduce((sum, val) => sum + val, 0);
+    }
+
+    function abilityMod(score) {
+      return Math.floor((score - 10) / 2);
+    }
+
+    const classes = ["Fighter", "Thief", "Wizard", "Priest"];
+    const level1Spells = {
+      Wizard: ["Magic Missile", "Shield", "Sleep", "Detect Magic", "Mage Armor"],
+      Priest: ["Cure Wounds", "Bless", "Protection from Evil", "Turn Undead", "Detect Evil"]
+    };
+
+    function getRandomFromArray(arr, count = 1) {
+      const shuffled = arr.slice().sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
+    }
+
+    function generateCharacter() {
+      const stats = {
+        STR: roll3d6(),
+        DEX: roll3d6(),
+        CON: roll3d6(),
+        INT: roll3d6(),
+        WIS: roll3d6(),
+        CHA: roll3d6()
+      };
+
+      const characterClass = getRandomFromArray(classes)[0];
+      const conMod = abilityMod(stats.CON);
+      const baseHP = {
+        Fighter: 8,
+        Thief: 6,
+        Wizard: 4,
+        Priest: 6
+      }[characterClass];
+
+      const gear = {
+        Fighter: ["Sword", "Shield", "Chainmail", "Torch x6"],
+        Thief: ["Dagger", "Thieves' Tools", "Leather Armor", "Torch x6"],
+        Wizard: ["Dagger", "Spellbook", "Robes", "Torch x6"],
+        Priest: ["Mace", "Holy Symbol", "Chainmail", "Torch x6"]
+      }[characterClass];
+
+      const spells = ["Wizard", "Priest"].includes(characterClass)
+        ? getRandomFromArray(level1Spells[characterClass], 3)
+        : [];
+
+      return {
+        Class: characterClass,
+        Stats: stats,
+        Modifiers: Object.fromEntries(Object.entries(stats).map(([k, v]) => [k, abilityMod(v)])),
+        HP: Math.max(1, baseHP + conMod),
+        Gear: gear,
+        Spells: spells
+      };
+    }
+
+    function generateAndDisplay() {
+      const char = generateCharacter();
+      document.getElementById("output").textContent = JSON.stringify(char, null, 2);
+    }
+  </script>
+</body>
+</html>
