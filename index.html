@@ -67,7 +67,7 @@
   </style>
 </head>
 <body>
-  <h1>Shadowdark RPG – Level 1 Character</h1>
+  <h1>Shadowdark</h1>
   <button id="generateBtn" onclick="generateAndDisplay()">🎲 Generate New Character</button>
 
   <div class="grid">
@@ -117,10 +117,10 @@
   </div>
 
   <div class="grid">
-    <div class="section"><h2>Gold (GP)</h2><input type="text" value="3d6 × 10 GP"></div>
+    <div class="section"><h2>Gold (GP)</h2><input type="text" value="3d6 × 10 GP" id="gold"></div>
     <div class="section"><h2>Silver (SP)</h2><input type="text" value="0"></div>
     <div class="section"><h2>Copper (CP)</h2><input type="text" value="0"></div>
-    <div class="section"><h2>Free to Carry</h2><input type="text" placeholder="e.g. 2 slots remaining"></div>
+    <div class="section"><h2>Free to Carry</h2><textarea id="freeToCarry"></textarea></div>
   </div>
 
   <script>
@@ -140,6 +140,10 @@
       const first = ["Kael", "Ryn", "Thorn", "Mira", "Dara", "Zar", "Lira", "Bryn", "Vor", "Nyra", "Eld"];
       const last = ["Blackthorn", "Ironfist", "Stormborn", "Nightshade", "Whisperwind", "Ashwalker", "Brighthelm"];
       return `${getRandom(first)} ${getRandom(last)}`;
+    }
+
+    function startingGold() {
+      return roll3d6() * 10;
     }
 
     const classes = ["Fighter", "Thief", "Wizard", "Priest"];
@@ -192,7 +196,9 @@
         attacks: weapons.map(w => {
           const mod = w.type === "melee" ? stats.STR.mod : stats.DEX.mod;
           return `${w.name} — +${mod} to hit — ${w.die} damage`;
-        })
+        }),
+        freeToCarry: ["Backpack"],
+        gold: startingGold()
       };
     }
 
@@ -205,6 +211,8 @@
       document.getElementById("spells").textContent = char.spells.join("\n") || "None";
       document.getElementById("talents").textContent = char.talents.join("\n");
       document.getElementById("attacks").textContent = char.attacks.join("\n");
+      document.getElementById("gold").value = char.gold;
+      document.getElementById("freeToCarry").value = char.freeToCarry.join("\n");
 
       for (const stat in char.stats) {
         const s = char.stats[stat];

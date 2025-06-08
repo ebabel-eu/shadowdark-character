@@ -1,0 +1,16 @@
+{
+  "name": "shadowdark-character",
+  "version": "1.0.0",
+  "description": "Generate a random Shadowdark character",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "rpg",
+    "shadowdark"
+  ],
+  "author": "Thomas Amar <hello@ebabel.eu>",
+  "license": "ISC"
+}
